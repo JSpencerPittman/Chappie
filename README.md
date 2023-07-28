@@ -8,8 +8,7 @@ git clone https://github.com/JSpencerPittman/Chappie
 ```
 2. Navigate into the repository and give the setup file executable permissions
 ```bash
-cd Chappie
-chmod +x setup
+cd Chappie && chmod +x setup
 ```
 3. Run the setup executable
 ```bash
