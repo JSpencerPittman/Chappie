@@ -6,4 +6,4 @@ include/.DS_Store
 .idea
 
 # Build files
-cmake-build-debug
+build
