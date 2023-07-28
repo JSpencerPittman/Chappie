@@ -1,6 +1,9 @@
 # Mac specific files
 .DS_Store
+include/.DS_Store
 
 # JetBrains specific files
 .idea
 
+# Build files
+cmake-build-debug
