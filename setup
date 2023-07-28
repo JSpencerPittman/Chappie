@@ -1,0 +1,18 @@
+#!/bin/bash
+echo "Setting up Chappie..."
+echo "REQUIREMENTS: C++_VERSION > 17 AND OpenCV > 4.8.0"
+
+echo "Establishing build directories..."
+cmake -B build/Debug -DCMAKE_BUILD_TYPE=Debug
+cmake -B build/Release -DCMAKE_BUILD_TYPE=Release
+
+echo "Building debug..."
+cmake --build build/Debug
+
+echo "Building release..."
+cmake --build build/Release
+
+echo "Duplicating release build"
+cp build/release/Chappie Chappie
+
+echo "Chappie is now setup :)"
