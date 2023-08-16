@@ -25,7 +25,6 @@ include_directories(include/chappie)
 
 file(GLOB_RECURSE SOURCES src/*.cpp)
 
-add_executable(Chappie demo.cpp ${SOURCES}
-        tests/tests.cpp)
+add_executable(Chappie demo.cpp ${SOURCES})
 
 target_link_libraries(Chappie ${OpenCV_LIBS})
