@@ -6,16 +6,36 @@
 #include <opencv2/opencv.hpp>
 
 namespace chap {
+    /*
+     * @className ImageManip
+     * @brief provides a class that provides inplace operations
+     *
+     * PS: this class is expected to house more functions
+     */
     class ImageManip {
     public:
+        /*
+         * @brief constructor
+         *
+         * @param m_image m_image to be manipulated
+         */
         ImageManip(cv::Mat image);
 
-        cv::Mat getImage() const;
+        /*
+         * @brief get m_image
+         */
+        cv::Mat Image() const;
 
-        cv::Mat rotateImage(int angle, bool inplace = false);
+        /*
+         * @brief rotate the m_image
+         *
+         * @param angle how much to rotate m_image in degrees
+         * @param inplace do we save changes to the class's m_image
+         */
+        cv::Mat RotateImage(int angle, bool inplace = false);
 
     private:
-        cv::Mat image;
+        cv::Mat m_image;
     };
 }
 

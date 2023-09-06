@@ -13,53 +13,121 @@
 typedef std::vector<cv::Point> Contour;
 
 namespace chap {
+
+    /*
+     * @ClassName Square
+     * @brief info about a square found in the m_image
+     */
     class Square {
     public:
+        /*
+         * @brief constructor
+         *
+         * @param contour the contour outlining the square
+         */
         Square(Contour contour);
 
+        /*
+         * @brief copy constructor
+         *
+         * @param sq square to be copied
+         */
         Square(const Square &sq);
 
-        const cv::Point2i &getTopLeft() const;
+        /*
+         * @brief top left corner
+         */
+        const cv::Point2i &TopLeft() const;
 
-        const cv::Point2i &getTopRight() const;
+        /*
+         * @brief top right corner
+         */
+        const cv::Point2i &TopRight() const;
 
-        const cv::Point2i &getBotRight() const;
+        /*
+         * @brief bottom right corner
+         */
+        const cv::Point2i &BotRight() const;
 
-        const cv::Point2i &getBotLeft() const;
+        /*
+         * @brief bottom left corner
+         */
+        const cv::Point2i &BotLeft() const;
 
-        const cv::Point2i &getLeftCP() const;
+        /*
+         * @brief middle of left side
+         */
+        const cv::Point2i &LeftMidpoint() const;
 
-        const cv::Point2i &getTopCP() const;
+        /*
+         * @brief middle of top side
+         */
+        const cv::Point2i &TopMidpoint() const;
 
-        const cv::Point2i &getRightCP() const;
+        /*
+         * @brief middle of right side
+         */
+        const cv::Point2i &RightMidpoint() const;
 
-        const cv::Point2i &getBottomCP() const;
+        /*
+         * @brief middle of bottom side
+         */
+        const cv::Point2i &BottomMidpoint() const;
 
-        double getWidth() const;
+        /*
+         * @brief width of the square
+         */
+        double Width() const;
 
-        double getHeight() const;
+        /*
+         * @brief height of the square
+         */
+        double Height() const;
 
-        double getArea() const;
+        /*
+         * @brief area of the square
+         */
+        double Area() const;
 
-        cv::Point2i getCenter() const;
+        /*
+         * @brief center of the square
+         */
+        cv::Point2i Center() const;
 
-        Contour getCorners() const;
+        /*
+         * @brief corners of the square
+         */
+        Contour Corners() const;
 
-        static std::vector<Square> findSquares(const cv::Mat &imageBinary);
+        /*
+         * @brief finds all squares in a binary m_image
+         *
+         * @param imageBinary binary m_image highlighting the squares
+         */
+        static std::vector<Square> FindSquares(const cv::Mat &imageBinary);
 
     private:
-        static cv::Point2i calcMidpoint(const cv::Point2i &a, const cv::Point2i &b);
+        /*
+         * @brief calculate midpoint of two points
+         *
+         * @param a first point
+         * @param b second point
+         */
+        static cv::Point2i CalcMidpoint(const cv::Point2i &a, const cv::Point2i &b);
 
-        static double calcDistance(const cv::Point2i &a, const cv::Point2i &b);
+        /*
+         * @brief calculate distance between two points
+         *
+         * @param a first point
+         * @param b second point
+         */
+        static double CalcDistance(const cv::Point2i &a, const cv::Point2i &b);
 
         cv::Point2i topLeft, topRight, botRight, botLeft;
-
-    private:
-        cv::Point2i leftCP, topCP, rightCP, bottomCP;
-        double width, height, area;
-        cv::Point2i center;
-
-        Contour corners;
+        cv::Point2i m_leftMidpoint, m_topMidpoint, m_rightMidpoint, m_bottomMidpoint;
+        double m_width, m_height, m_area;
+        cv::Point2i m_center;
+        Contour m_corners;
     };
 }
 

@@ -4,87 +4,97 @@ using namespace chap;
 
 ColorPadRuler::ColorPadRuler(cv::Mat image, bool exclusion)
 {
-    this->image = std::move(image);
-    this->lowerPad = nullptr;
-    this->upperPad = nullptr;
+    m_image = std::move(image);
+    m_lowerPad = nullptr;
+    m_upperPad = nullptr;
 
-    this->identifyPads(exclusion);
+    IdentifyPads(exclusion);
 }
 
-cv::Mat ColorPadRuler::getImage() const { return this->image; }
+cv::Mat ColorPadRuler::Image() const { return m_image; }
 
-const Square &ColorPadRuler::getUpperPad() const { return *(this->upperPad); }
-const Square &ColorPadRuler::getLowerPad() const { return *(this->lowerPad); }
+const Square &ColorPadRuler::UpperPad() const { return *(m_upperPad); }
+const Square &ColorPadRuler::LowerPad() const { return *(m_lowerPad); }
 
 
-cv::Mat ColorPadRuler::highlight() const
+cv::Mat ColorPadRuler::Highlight() const
 {
     cv::Mat imageHighlighted;
-    cv::cvtColor(this->image, imageHighlighted, cv::COLOR_BGR2Lab);
+    cv::cvtColor(m_image, imageHighlighted, cv::COLOR_BGR2Lab);
     cv::extractChannel(imageHighlighted, imageHighlighted, 1);
     cv::threshold(imageHighlighted, imageHighlighted, 127, 255, cv::THRESH_BINARY_INV | cv::THRESH_OTSU);
     return imageHighlighted;
 }
 
-bool ColorPadRuler::padsFound() const
+bool ColorPadRuler::PadsFound() const
 {
-    return this->lowerPad != nullptr && this->upperPad != nullptr;
+    return m_lowerPad != nullptr && m_upperPad != nullptr;
 }
 
 
-void ColorPadRuler::identifyPads( bool exclusion )
+void ColorPadRuler::IdentifyPads(bool exclusion)
 {
-    std::vector<Square> pads = Square::findSquares(this->highlight());
+    std::vector<Square> pads = Square::FindSquares(Highlight());
 
+    // did we find two pads in the image if not the bowl may be interfering
+    //      in the highlighting process
     if ( pads.size() == 2 ) {
-        if ( pads[0].getCenter().y > pads[1].getCenter().y ) {
-            this->upperPad = new Square(pads[1]);
-            this->lowerPad = new Square(pads[0]);
+        if (pads[0].Center().y > pads[1].Center().y ) {
+            m_upperPad = new Square(pads[1]);
+            m_lowerPad = new Square(pads[0]);
         } else {
-            this->upperPad = new Square(pads[0]);
-            this->lowerPad = new Square(pads[1]);
+            m_upperPad = new Square(pads[0]);
+            m_lowerPad = new Square(pads[1]);
         }
-    } else if ( exclusion ) this->identifyPadsWithBowl();
+    } else if ( exclusion ) IdentifyPadsWithBowl();
 }
 
-void ColorPadRuler::identifyPadsWithBowl() {
-    Bowl bowl(this->image);
-    BoundingBox bbox = bowl.boundingBox();
+void ColorPadRuler::IdentifyPadsWithBowl() {
+    // Locate the bowl
+    Bowl bowl(m_image);
+    BoundingBox bbox = bowl.FindBoundingBox();
 
     if ( !bbox.doesExist() ) return;
 
-    cv::Mat imageWithoutBowl = this->horizontalExclusion(bbox.getLeft(), bbox.getRight());
+    // Remove bowl from the image
+    cv::Mat imageWithoutBowl = HorizontalExclusion(bbox.Left(), bbox.Right());
 
+    // Find the device in the image without the bowl
     ColorPadRuler cpr(imageWithoutBowl, false);
 
-    if ( cpr.lowerPad == nullptr || cpr.upperPad == nullptr ) return;
+    // Did it find it?
+    if (cpr.m_lowerPad == nullptr || cpr.m_upperPad == nullptr ) return;
 
-    Square lowPadExcl = *(cpr.lowerPad);
-    Square uppPadExcl = *(cpr.upperPad);
+    // Extract cpr's detected pads
+    Square lowPadExcl = *(cpr.m_lowerPad);
+    Square uppPadExcl = *(cpr.m_upperPad);
 
-    int leftSideWidth = bbox.getLeft();
-    int exclWidth = bbox.getRight() - bbox.getLeft() + 1;
+    // Translate the location from the image without the bowl
+    //  to the location in the image with a bowl still in it
+    int leftSideWidth = bbox.Left();
+    int exclWidth = bbox.Right() - bbox.Left() + 1;
 
-    if ( lowPadExcl.getCenter().x >= leftSideWidth ) {
-        lowPadExcl = ColorPadRuler::horizontalSquareShift(lowPadExcl, exclWidth);
-        uppPadExcl = ColorPadRuler::horizontalSquareShift(uppPadExcl, exclWidth);
+    if (lowPadExcl.Center().x >= leftSideWidth ) {
+        lowPadExcl = ColorPadRuler::HorizontalSquareShift(lowPadExcl, exclWidth);
+        uppPadExcl = ColorPadRuler::HorizontalSquareShift(uppPadExcl, exclWidth);
     }
 
-    this->lowerPad = new Square(lowPadExcl);
-    this->upperPad = new Square(uppPadExcl);
+    // Update pads
+    m_lowerPad = new Square(lowPadExcl);
+    m_upperPad = new Square(uppPadExcl);
 }
 
-cv::Mat ColorPadRuler::horizontalExclusion(int left, int right)
+cv::Mat ColorPadRuler::HorizontalExclusion(int left, int right)
 {
-    cv::Range allRows(0, this->image.rows);
+    cv::Range allRows(0, m_image.rows);
 
     cv::Range leftColRange(0, left);
-    cv::Range rightColRange((right+1), this->image.cols);
+    cv::Range rightColRange((right+1), m_image.cols);
 
-    cv::Mat leftSide = this->image(allRows, leftColRange);
-    cv::Mat rightSide = this->image(allRows, rightColRange);
+    cv::Mat leftSide = m_image(allRows, leftColRange);
+    cv::Mat rightSide = m_image(allRows, rightColRange);
 
-    if ( !leftSide.cols && !rightSide.cols ) return this->image;
+    if ( !leftSide.cols && !rightSide.cols ) return m_image;
     else if ( !leftSide.cols ) return rightSide;
     else if ( !rightSide.cols ) return leftSide;
 
@@ -94,9 +104,9 @@ cv::Mat ColorPadRuler::horizontalExclusion(int left, int right)
     return merged;
 }
 
-Square ColorPadRuler::horizontalSquareShift(const Square& sq, int shift)
+Square ColorPadRuler::HorizontalSquareShift(const Square& sq, int shift)
 {
-    Contour corners = sq.getCorners();
+    Contour corners = sq.Corners();
     auto corItr = corners.begin();
     for( ; corItr != corners.end(); corItr++ )
         corItr->x += shift;

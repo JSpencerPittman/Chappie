@@ -4,88 +4,88 @@ using namespace chap;
 
 Display::Display(const cv::Mat& image)
 {
-    this->image = image.clone();
+    this->m_image = image.clone();
 }
 
-cv::Mat Display::getImage() const { return this->image; }
+cv::Mat Display::Image() const { return this->m_image; }
 
-void Display::drawOutline(const chap::Outline& outline)
+void Display::DrawOutline(const chap::Outline& outline)
 {
     cv::Scalar red(0, 0, 255);
 
     auto ptItr = outline.begin();
     for( ; ptItr != outline.end(); ptItr++ )
-        this->drawPoint(*ptItr);
+        this->DrawPoint(*ptItr);
 }
 
-void Display::drawBoundingBox(const BoundingBox& bbox, int linewidth, char color)
+void Display::DrawBoundingBox(const BoundingBox& bbox, int linewidth, char color)
 {
-    const cv::Point2i topLeft(bbox.getLeft(), bbox.getTop());
-    const cv::Point2i topRight(bbox.getRight(), bbox.getTop());
-    const cv::Point2i botRight(bbox.getRight(), bbox.getBottom());
-    const cv::Point2i botLeft(bbox.getLeft(), bbox.getBottom());
+    const cv::Point2i topLeft(bbox.Left(), bbox.Top());
+    const cv::Point2i topRight(bbox.Right(), bbox.Top());
+    const cv::Point2i botRight(bbox.Right(), bbox.Bottom());
+    const cv::Point2i botLeft(bbox.Left(), bbox.Bottom());
 
-    // leftCP side
-    this->drawLine(botLeft, topLeft, linewidth, color);
-    // topCP side
-    this->drawLine(topLeft, topRight, linewidth, color);
-    // rightCP side
-    this->drawLine(topRight, botRight, linewidth, color);
-    // bottomCP side
-    this->drawLine(botRight, botLeft, linewidth, color);
+    // left side
+    this->DrawLine(botLeft, topLeft, linewidth, color);
+    // top side
+    this->DrawLine(topLeft, topRight, linewidth, color);
+    // right side
+    this->DrawLine(topRight, botRight, linewidth, color);
+    // bottom side
+    this->DrawLine(botRight, botLeft, linewidth, color);
 }
 
-void Display::drawSquare(const Square &sq, char color, int linewidth, float alpha)
+void Display::DrawSquare(const Square &sq, char color, int linewidth, float alpha)
 {
-    this->drawSquareBorder(sq, linewidth, color);
-    this->drawSquareFill(sq, alpha, color);
-    this->drawSquareCross(sq, linewidth, color);
+    this->DrawSquareBorder(sq, linewidth, color);
+    this->DrawSquareFill(sq, alpha, color);
+    this->DrawSquareCross(sq, linewidth, color);
 }
 
-void Display::drawSquareBorder(const Square &sq, int linewidth, char color)
+void Display::DrawSquareBorder(const Square &sq, int linewidth, char color)
 {
-    this->drawLine(sq.getBotLeft(), sq.getTopLeft(), linewidth, color);
-    this->drawLine(sq.getTopLeft(), sq.getTopRight(), linewidth, color);
-    this->drawLine(sq.getTopRight(), sq.getBotRight(), linewidth, color);
-    this->drawLine(sq.getBotRight(), sq.getBotLeft(), linewidth, color);
+    this->DrawLine(sq.BotLeft(), sq.TopLeft(), linewidth, color);
+    this->DrawLine(sq.TopLeft(), sq.TopRight(), linewidth, color);
+    this->DrawLine(sq.TopRight(), sq.BotRight(), linewidth, color);
+    this->DrawLine(sq.BotRight(), sq.BotLeft(), linewidth, color);
 }
 
-void Display::drawSquareFill(const Square &sq, float alpha, char color)
+void Display::DrawSquareFill(const Square &sq, float alpha, char color)
 {
-    cv::Scalar colorExpanded = Display::decryptColor(color);
+    cv::Scalar colorExpanded = Display::TranscribeColor(color);
 
     std::vector<cv::Point2i> vertices;
-    vertices.push_back(sq.getTopLeft());
-    vertices.push_back(sq.getTopRight());
-    vertices.push_back(sq.getBotRight());
-    vertices.push_back(sq.getBotLeft());
+    vertices.push_back(sq.TopLeft());
+    vertices.push_back(sq.TopRight());
+    vertices.push_back(sq.BotRight());
+    vertices.push_back(sq.BotLeft());
 
-    cv::Mat imageCopy = image.clone();
+    cv::Mat imageCopy = m_image.clone();
 
     cv::fillConvexPoly(imageCopy, vertices, colorExpanded);
 
-    cv::addWeighted(this->image, 1 - alpha, imageCopy, alpha, 0, this->image);
+    cv::addWeighted(this->m_image, 1 - alpha, imageCopy, alpha, 0, this->m_image);
 }
 
-void Display::drawSquareCross(const Square &sq, int linewidth, char color)
+void Display::DrawSquareCross(const Square &sq, int linewidth, char color)
 {
-    this->drawLine(sq.getLeftCP(), sq.getRightCP(), linewidth, color);
-    this->drawLine(sq.getTopCP(), sq.getBottomCP(), linewidth, color);
+    this->DrawLine(sq.LeftMidpoint(), sq.RightMidpoint(), linewidth, color);
+    this->DrawLine(sq.TopMidpoint(), sq.BottomMidpoint(), linewidth, color);
 }
 
-void Display::drawPoint(const cv::Point& pt, int radius, char color)
+void Display::DrawPoint(const cv::Point& pt, int radius, char color)
 {
-    cv::Scalar expandedColor = Display::decryptColor(color);
-    cv::circle(this->image, pt, radius, expandedColor, cv::FILLED);
+    cv::Scalar expandedColor = Display::TranscribeColor(color);
+    cv::circle(this->m_image, pt, radius, expandedColor, cv::FILLED);
 }
 
-void Display::drawLine(const cv::Point& pt1, const cv::Point& pt2, int linewidth, char color)
+void Display::DrawLine(const cv::Point& pt1, const cv::Point& pt2, int linewidth, char color)
 {
-    cv::Scalar expandedColor = Display::decryptColor(color);
-    cv::line(this->image, pt1, pt2, expandedColor, linewidth);
+    cv::Scalar expandedColor = Display::TranscribeColor(color);
+    cv::line(this->m_image, pt1, pt2, expandedColor, linewidth);
 }
 
-cv::Scalar Display::decryptColor(char c) {
+cv::Scalar Display::TranscribeColor(char c) {
     switch (c) {
         case 'b': // blue
             return {255, 0, 0};

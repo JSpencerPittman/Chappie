@@ -4,21 +4,24 @@ using namespace chap;
 
 ImageManip::ImageManip( cv::Mat image )
 {
-    this->image = image.clone();
+    m_image = image.clone();
 }
 
-cv::Mat ImageManip::getImage() const { return this->image; }
+cv::Mat ImageManip::Image() const { return m_image; }
 
-cv::Mat ImageManip::rotateImage( int angle, bool inplace )
+cv::Mat ImageManip::RotateImage(int angle, bool inplace )
 {
-    cv::Point2i center(this->image.cols / 2, this->image.rows / 2);
+    // Calculate the rotation matrix to rotate about the calculated m_center
+    cv::Point2i center(m_image.cols / 2, m_image.rows / 2);
     cv::Mat rotationMatrix = cv::getRotationMatrix2D(center, angle, 1);
 
+    // rotate the m_image
     cv::Mat rotatedImage;
-    cv::Size2i outputSize(this->image.cols, this->image.rows);
-    cv::warpAffine(this->image, rotatedImage, rotationMatrix, outputSize);
+    cv::Size2i outputSize(m_image.cols, m_image.rows);
+    cv::warpAffine(m_image, rotatedImage, rotationMatrix, outputSize);
 
-    if ( inplace ) this->image = rotatedImage;
+    // Save changes to our m_image
+    if ( inplace ) m_image = rotatedImage;
 
     return rotatedImage;
 }

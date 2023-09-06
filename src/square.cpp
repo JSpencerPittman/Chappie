@@ -4,89 +4,105 @@ using namespace chap;
 
 Square::Square(Contour contour)
 {
+    // sort points based on y coordinate in descending order
     std::sort(contour.begin(), contour.end(),
               [] ( const cv::Point& a, const cv::Point& b ) {
             return a.y > b.y;
     });
 
+    // Determine each corner
     if ( contour[0].x < contour[1].x ) {
-        this->topLeft = contour[0];
-        this->topRight = contour[1];
+        topLeft = contour[0];
+        topRight = contour[1];
     } else {
-        this->topLeft = contour[1];
-        this->topRight = contour[0];
+        topLeft = contour[1];
+        topRight = contour[0];
     }
 
     if ( contour[2].x < contour[3].x ) {
-        this->botLeft = contour[2];
-        this->botRight = contour[3];
+        botLeft = contour[2];
+        botRight = contour[3];
     } else {
-        this->botLeft = contour[3];
-        this->botRight = contour[2];
+        botLeft = contour[3];
+        botRight = contour[2];
     }
 
-    this->leftCP = Square::calcMidpoint(this->botLeft, this->topLeft);
-    this->topCP = Square::calcMidpoint(this->topLeft, this->topRight);
-    this->rightCP = Square::calcMidpoint(this->topRight, this->botRight);
-    this->bottomCP = Square::calcMidpoint(this->botRight, this->botLeft);
+    // determine midpoints
+    m_leftMidpoint = Square::CalcMidpoint(botLeft, topLeft);
+    m_topMidpoint = Square::CalcMidpoint(topLeft, topRight);
+    m_rightMidpoint = Square::CalcMidpoint(topRight, botRight);
+    m_bottomMidpoint = Square::CalcMidpoint(botRight, botLeft);
 
-    this->width = Square::calcDistance(this->leftCP, this->rightCP);
-    this->height = Square::calcDistance(this->topCP, this->bottomCP);
-    this->area = this->width * this->height;
+    // determine dimensions
+    m_width = Square::CalcDistance(m_leftMidpoint, m_rightMidpoint);
+    m_height = Square::CalcDistance(m_topMidpoint, m_bottomMidpoint);
+    m_area = m_width * m_height;
 
-    cv::Point2i c1 = Square::calcMidpoint(this->topLeft, this->botRight);
-    cv::Point2i c2 = Square::calcMidpoint(this->topRight, this->botLeft);
+    // find the center
+    cv::Point2i c1 = Square::CalcMidpoint(topLeft, botRight);
+    cv::Point2i c2 = Square::CalcMidpoint(topRight, botLeft);
     int cx = ( c1.x + c2.x ) / 2;
     int cy = ( c1.y + c2.y ) / 2;
-    this->center = cv::Point2i(cx, cy);
+    m_center = cv::Point2i(cx, cy);
 
-    this->corners = contour;
+    m_corners = contour;
 }
 
 Square::Square(const Square &sq)
 {
-    this->topLeft = sq.topLeft;
-    this->topRight = sq.topRight;
-    this->botRight = sq.botRight;
-    this->botLeft = sq.botLeft;
+    topLeft = sq.topLeft;
+    topRight = sq.topRight;
+    botRight = sq.botRight;
+    botLeft = sq.botLeft;
 
-    this->leftCP = sq.leftCP;
-    this->topCP = sq.topCP;
-    this->rightCP = sq.rightCP;
-    this->bottomCP = sq.bottomCP;
+    m_leftMidpoint = sq.m_leftMidpoint;
+    m_topMidpoint = sq.m_topMidpoint;
+    m_rightMidpoint = sq.m_rightMidpoint;
+    m_bottomMidpoint = sq.m_bottomMidpoint;
 
-    this->width = sq.width;
-    this->height = sq.height;
-    this->area = sq.area;
+    m_width = sq.m_width;
+    m_height = sq.m_height;
+    m_area = sq.m_area;
 
-    this->center = sq.center;
+    m_center = sq.m_center;
 
-    this->corners = sq.corners;
+    m_corners = sq.m_corners;
 }
 
-double Square::getWidth() const { return this->width; }
-double Square::getHeight() const { return this->height; }
-double Square::getArea() const { return this->area; }
-cv::Point2i Square::getCenter() const { return this->center; }
-Contour Square::getCorners() const { return this->corners; }
+const cv::Point2i &Square::TopLeft() const { return topLeft; }
+const cv::Point2i &Square::TopRight() const { return topRight; }
+const cv::Point2i &Square::BotRight() const { return botRight; }
+const cv::Point2i &Square::BotLeft() const { return botLeft; }
+const cv::Point2i &Square::LeftMidpoint() const { return m_leftMidpoint; }
+const cv::Point2i &Square::TopMidpoint() const { return m_topMidpoint; }
+const cv::Point2i &Square::RightMidpoint() const { return m_rightMidpoint; }
+const cv::Point2i &Square::BottomMidpoint() const { return m_bottomMidpoint; }
+double Square::Width() const { return m_width; }
+double Square::Height() const { return m_height; }
+double Square::Area() const { return m_area; }
+cv::Point2i Square::Center() const { return m_center; }
+Contour Square::Corners() const { return m_corners; }
 
-std::vector<Square> Square::findSquares(const cv::Mat& imageBinary) {
+std::vector<Square> Square::FindSquares(const cv::Mat& imageBinary) {
+    // Find all countours in the m_image
     std::vector<Contour> contours;
     cv::findContours(imageBinary, contours, cv::RETR_EXTERNAL, cv::CHAIN_APPROX_SIMPLE);
 
     std::vector<Square> squares;
     auto cntItr = contours.begin();
     for( ; cntItr != contours.end() ; cntItr++ ) {
+        // A square should have a high area:length ratio
         double area = cv::contourArea(*cntItr);
-
         if ( ( area / (double)cntItr->size() ) < AREA_LENGTH_RATIO_THRESHOLD )
             continue;
 
         double perimeter = cv::arcLength(*cntItr, true);
 
+        // Approximate the contour as a polygon
         Contour approxCurve;
         cv::approxPolyDP(*cntItr, approxCurve, 0.02 * perimeter, true);
 
+        // if our polygon is 4 sided then our contour resembles a square
         if ( approxCurve.size() == SIDES_ON_SQUARE )
             squares.emplace_back(approxCurve);
     }
@@ -94,25 +110,16 @@ std::vector<Square> Square::findSquares(const cv::Mat& imageBinary) {
     return squares;
 }
 
-cv::Point2i Square::calcMidpoint(const cv::Point2i& a, const cv::Point2i& b)
+cv::Point2i Square::CalcMidpoint(const cv::Point2i& a, const cv::Point2i& b)
 {
     int cx = ( a.x + b.x ) / 2;
     int cy = ( a.y + b.y ) / 2;
     return {cx, cy};
 }
 
-double Square::calcDistance(const cv::Point2i& a, const cv::Point2i& b)
+double Square::CalcDistance(const cv::Point2i& a, const cv::Point2i& b)
 {
     int horiDist = a.x - b.x;
     int vertDist = a.y - b.y;
     return std::sqrt(std::pow(horiDist, 2) + std::pow(vertDist, 2));
 }
-
-const cv::Point2i &Square::getTopLeft() const { return this->topLeft; }
-const cv::Point2i &Square::getTopRight() const { return this->topRight; }
-const cv::Point2i &Square::getBotRight() const { return botRight; }
-const cv::Point2i &Square::getBotLeft() const { return botLeft; }
-const cv::Point2i &Square::getLeftCP() const { return leftCP; }
-const cv::Point2i &Square::getTopCP() const { return topCP; }
-const cv::Point2i &Square::getRightCP() const { return rightCP; }
-const cv::Point2i &Square::getBottomCP() const { return bottomCP; }
