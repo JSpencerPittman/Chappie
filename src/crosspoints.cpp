@@ -45,4 +45,4 @@ CrossPoints::CrossPoints(const chap::Outline &outline, const BoundingBox &bbox)
 cv::Point2i CrossPoints::Left() const { return m_leftCP; }
 cv::Point2i CrossPoints::Top() const { return m_topCP; }
 cv::Point2i CrossPoints::Right() const { return m_rightCP; }
-cv::Point2i CrossPoints::Bottom() const { return>m_bottomCP; }
+cv::Point2i CrossPoints::Bottom() const { return m_bottomCP; }

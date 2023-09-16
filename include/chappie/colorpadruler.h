@@ -9,6 +9,8 @@
 #include "bowl.h"
 #include "boundingbox.h"
 
+#define LAB_THRESHOLD 100
+
 typedef std::vector<cv::Point> Contour;
 
 namespace chap {
@@ -30,7 +32,7 @@ namespace chap {
          * @param m_image containing the measuring device
          * @param exclusion if there's a bowl do we remove it out of the m_image
          */
-        ColorPadRuler(cv::Mat image, bool exclusion = true);
+        ColorPadRuler(cv::Mat image);
 
         /*
          * @brief get m_image
@@ -67,28 +69,8 @@ namespace chap {
          *
          * @param exclusion if there's a bowl do we remove it out of the m_image
          */
-        void IdentifyPads(bool exclusion);
+        void IdentifyPads();
 
-        /*
-         * @brief find the green pads with a bowl in the m_image
-         */
-        void IdentifyPadsWithBowl();
-
-        /*
-         * @brief remove the cols of the m_image from [left, right]
-         *
-         * @param left leftmost column to remove
-         * @param right rightmost column to remove
-         */
-        cv::Mat HorizontalExclusion(int left, int right);
-
-        /*
-         * @brief shift a square horizontally
-         *
-         * @param sq square to be shifted
-         * @param shift how many pixels to shift said square
-         */
-        static Square HorizontalSquareShift(const Square &sq, int shift);
 
         cv::Mat m_image;
         Square *m_lowerPad;

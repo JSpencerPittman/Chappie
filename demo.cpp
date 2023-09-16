@@ -25,46 +25,46 @@ cv::Mat* detection(const cv::Mat& image) {
 
     // Bowl
     chap::Bowl bowl(image);
-    chap::BoundingBox bowlBBox = bowl.boundingBox();
+    chap::BoundingBox bowlBBox = bowl.FindBoundingBox();
     if ( bowlBBox.doesExist() )
-        display.drawBoundingBox(bowlBBox, 2, 'b');
+        display.DrawBoundingBox(bowlBBox, 2, 'b');
 
     // WhitePatch
     chap::WhitePatch wp(image);
-    vector<chap::Square> squares = wp.locate();
+    vector<chap::Square> squares = wp.Locate();
     for (const chap::Square& square : squares)
-        display.drawSquare(square, 'o', 2, 0.3);
+        display.DrawSquare(square, 'o', 2, 0.3);
 
     // ColorPadRuler
     chap::ColorPadRuler cpr(image);
-    if ( cpr.padsFound() ) {
-        display.drawSquare(cpr.getUpperPad(), 'r', 2, 0.3);
-        display.drawSquare(cpr.getLowerPad(), 'r', 2, 0.3);
+    if (cpr.PadsFound() ) {
+        display.DrawSquare(cpr.UpperPad(), 'r', 2, 0.3);
+        display.DrawSquare(cpr.LowerPad(), 'r', 2, 0.3);
     }
 
-    return new cv::Mat(display.getImage());
+    return new cv::Mat(display.Image());
 }
 
 cv::Mat* red(const cv::Mat& image) {
     chap::Bowl bowl(image);
-    return new cv::Mat(bowl.highlight());
+    return new cv::Mat(bowl.Highlight());
 }
 
 cv::Mat* white(const cv::Mat& image) {
     chap::WhitePatch wp(image);
-    return new cv::Mat(wp.highlight());
+    return new cv::Mat(wp.Highlight());
 }
 
 cv::Mat* green(const cv::Mat& image) {
     chap::ColorPadRuler cpr(image);
-    return new cv::Mat(cpr.highlight());
+    return new cv::Mat(cpr.Highlight());
 }
 
 cv::Mat* level(const cv::Mat& image) {
     chap::Bowl bowl(image);
-    chap::BoundingBox bbox = bowl.boundingBox();
+    chap::BoundingBox bbox = bowl.FindBoundingBox();
     if (bbox.doesExist()) {
-        return new cv::Mat(bowl.level().getImage());
+        return new cv::Mat(bowl.Level().Image());
     }
     else
         return new cv::Mat(image);
@@ -101,7 +101,7 @@ void runImage(const char* program, const char* path)
     initialImage = imread(path, cv::IMREAD_COLOR);
 
     if( !initialImage.data ){
-        printf("No image data \n");
+        printf("No m_image data \n");
         return;
     }
 

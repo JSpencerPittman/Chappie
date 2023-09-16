@@ -26,8 +26,8 @@ The two main usages are
 The video will use the first available camera it finds on your computer.<br>
 For the **PROGRAM** tag there are multiple options available:<br>
 **DETECTION**: Detects the bowl, white patches and color pad measurement device and draws boxes on them.<br>
-**LEVEL**: Detects the bowl and rotates the image to make the bowl level.<br>
-**NONE**: Just displays the image or live video stream itself.<br>
+**LEVEL**: Detects the bowl and rotates the m_image to make the bowl level.<br>
+**NONE**: Just displays the m_image or live video stream itself.<br>
 **RED**: what the camera sees when looking for the bowl.<br>
 **WHITE**: what the camera sees when looking for the white patches.<br>
 **GREEN**: what the camera sees when looking for the color pad measuring device.<br>
