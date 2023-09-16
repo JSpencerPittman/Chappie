@@ -9,7 +9,7 @@
 #include "bowl.h"
 #include "boundingbox.h"
 
-#define LAB_THRESHOLD 100
+#define LAB_THRESHOLD 120
 
 typedef std::vector<cv::Point> Contour;
 
